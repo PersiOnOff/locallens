@@ -1,23 +1,27 @@
 # LocalLens
 
-### Your knowledge. Your machine.
+![LocalLens — Your knowledge. Your machine.](docs/media/social-preview.png)
 
-A self-hosted workspace that turns PDFs, notes, documentation and source code into a private, searchable library. Ask a question, watch the answer stream, and follow citations back to the exact passage.
+[![CI](https://github.com/PersiOnOff/locallens/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/PersiOnOff/locallens/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-718d55)](LICENSE)
+[![.NET 10](https://img.shields.io/badge/.NET-10-546b8c)](src/SelfHostedAi.Api/SelfHostedAi.Api.csproj)
+[![React 19](https://img.shields.io/badge/React-19-507d78)](client/package.json)
 
-**ASP.NET Core · React · SQLite · Microsoft.Extensions.AI · Ollama**
+**Ask your private documents. Follow the evidence. Keep inference on your machine.**
 
-- **Documents first.** Upload PDFs, Markdown and UTF-8 text, then ask questions across the library or selected files.
-- **Evidence within reach.** Inspect retrieved passages with PDF page numbers or text line ranges. Code blocks have syntax highlighting.
-- **Two quiet themes.** Paper and sage by day, deep graphite and soft green at night. Toggle the theme in the header; your choice stays in this browser.
-- **Local inference.** Embeddings and answers run through Ollama. No cloud provider or telemetry is configured.
-- **Explore connections.** Import a local folder and browse a graph of resolved relative imports and Markdown links.
-- **Persistent and inspectable.** SQLite stores sources, chunks and vectors; model weights live in a separate Docker volume. Interrupted indexing resumes after restart.
+A self-hosted workspace for PDFs, notes, documentation and source code, built with
+ASP.NET Core, React, SQLite and local Ollama models. No cloud provider or telemetry
+is configured. Initial model and image downloads require internet.
+
+[Quick start](#start-in-one-command) · [See it in action](#a-question-a-source-a-little-more-context) · [Limits](#supported-inputs-and-limits) · [Contribute](CONTRIBUTING.md)
 
 ## Start in one command
 
 Install Docker with Compose v2. Clone this repository, enter its directory and run:
 
 ```sh
+git clone https://github.com/PersiOnOff/locallens.git
+cd locallens
 docker compose up --build
 ```
 
@@ -39,16 +43,52 @@ Choose **Connect a local repository**, leave the path as `.` and import. The def
 
 Open a source chip below the answer to inspect its passage. Switch to **File connections** to see the link from `welcome.md` to `policy.md`.
 
+## A question, a source, a little more context
+
+![Real LocalLens walkthrough: upload, local indexing, question, cited answer, source preview, themes and graph](docs/media/demo.gif)
+
+_An edited walkthrough captured from the running application using fictional
+sample documents and real local Ollama models. Keyframe timing is for readability,
+not an inference-speed benchmark._
+
+### Two sides of the same workspace
+
+| Light — paper and sage                                                        | Dark — graphite and soft green                                                     |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ![Light theme with a real answer and source chips](docs/media/light-chat.jpg) | ![Dark theme with the same real answer and source chips](docs/media/dark-chat.jpg) |
+
+The theme switch stays in the header, and your choice stays in this browser.
+
+<details>
+<summary>Explore the welcome screen, source preview and file graph</summary>
+
+| A place to begin                                      | Follow the connections                                                                    |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ![Light welcome screen](docs/media/light-welcome.jpg) | ![Dark file graph showing the sample documents and their link](docs/media/file-graph.jpg) |
+
+![An actual retrieved passage in the source preview](docs/media/source-preview.jpg)
+
+</details>
+
+## What you can do
+
+- **Documents first.** Upload PDFs, Markdown and UTF-8 text, then ask questions across the library or selected files.
+- **Evidence within reach.** Inspect retrieved passages with PDF page numbers or text line ranges. Code blocks have syntax highlighting.
+- **Two quiet themes.** Paper and sage by day, deep graphite and soft green at night, including code blocks and the graph.
+- **Local inference.** Embeddings and answers run through Ollama. No cloud provider or telemetry is configured.
+- **Explore connections.** Import a local folder and browse a graph of resolved relative imports and Markdown links.
+- **Persistent and inspectable.** SQLite stores sources, chunks and vectors; model weights live in a separate Docker volume. Interrupted indexing resumes after restart.
+
 ## Configuration
 
 Defaults work without an `.env` file. Copy `.env.example` to `.env` to customize:
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `8080` | Localhost web port |
-| `CHAT_MODEL` | `qwen2.5:3b` | Local Ollama chat model |
-| `EMBEDDING_MODEL` | `nomic-embed-text` | Local Ollama embedding model |
-| `REPOSITORIES_PATH` | `./samples` | Existing folder mounted read-only as the import root |
+| Variable            | Default            | Purpose                                              |
+| ------------------- | ------------------ | ---------------------------------------------------- |
+| `PORT`              | `8080`             | Localhost web port                                   |
+| `CHAT_MODEL`        | `qwen2.5:3b`       | Local Ollama chat model                              |
+| `EMBEDDING_MODEL`   | `nomic-embed-text` | Local Ollama embedding model                         |
+| `REPOSITORIES_PATH` | `./samples`        | Existing folder mounted read-only as the import root |
 
 Use forward slashes for Windows host paths, for example `D:/Projects/MyRepository`. The import dialog takes a **relative** directory inside this root, not a host absolute path. `.` imports the root. Imports are snapshots: existing paths are skipped on repeat import; delete and reimport changed files to refresh their content. **Reindex** regenerates embeddings from the stored snapshot.
 
@@ -84,12 +124,12 @@ Citations are model-generated pointers to retrieved excerpts, **not a guarantee 
 
 ## Supported inputs and limits
 
-| Input | Behavior |
-|---|---|
-| PDF | Extractable text, page references; no OCR or image/table interpretation |
-| Markdown / text | UTF-8; line references; Markdown links contribute graph edges |
-| Source files | C#, TS/JS/React, Python, Java, Go, Rust, HTML/CSS, SQL, shell, JSON/YAML/XML, csproj |
-| File graph | Relative `from`, `import`, `require` and Markdown links; conservative heuristic, not a full compiler graph |
+| Input           | Behavior                                                                                                   |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| PDF             | Extractable text, page references; no OCR or image/table interpretation                                    |
+| Markdown / text | UTF-8; line references; Markdown links contribute graph edges                                              |
+| Source files    | C#, TS/JS/React, Python, Java, Go, Rust, HTML/CSS, SQL, shell, JSON/YAML/XML, csproj                       |
+| File graph      | Relative `from`, `import`, `require` and Markdown links; conservative heuristic, not a full compiler graph |
 
 Initial single-user limits: **20 MB/file**, **300,000 extracted characters/file**, **500 PDF pages**, **300 chunks/file**, **500 sources/library**, **2,000 candidate files/import**. One indexing worker and one concurrent chat request keep local load bounded. Exact SQLite vector search is intended for small personal libraries; large corpora need a dedicated vector index. Questions are limited to 4,000 characters. Request timeout is five minutes.
 
@@ -145,6 +185,14 @@ The console suite tests chunk coverage, overlap, vectors, path confinement, SQLi
 - **Repository folder unavailable:** set `REPOSITORIES_PATH` to an existing readable directory and recreate the app container.
 - **Upload rejected:** check UTF-8 encoding, size/character limits and extractable PDF text.
 - **Public host name rejected:** the default allowed hosts are localhost and loopback addresses. Remote deployment requires explicit host configuration as well as authentication and TLS.
+
+## Contributing
+
+Small, focused contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md),
+report a problem using the [bug form](https://github.com/PersiOnOff/locallens/issues/new/choose),
+or suggest a concrete improvement. Please use fictional documents in public reports.
+
+See the [changelog](CHANGELOG.md) for the initial feature set and its boundaries.
 
 ## License
 

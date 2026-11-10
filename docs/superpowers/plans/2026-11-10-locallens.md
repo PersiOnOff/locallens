@@ -48,4 +48,4 @@ Ruling (2026-11-10): User will upload to GitHub themselves. Prepare local Git re
 Ruling: Added light/dark themes per user request, with persistent choice and theme-aware graph/code blocks.
 
 
-Validation: see docs/verification.md. Browser visual QA was blocked by the access gate; do not claim it was performed.
+Validation: see docs/verification.md. Browser access was initially blocked. During the subsequent repository-launch task, the user explicitly approved local browser access and a real sample walkthrough was captured; the verification record distinguishes those sessions.

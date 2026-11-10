@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a focused improvement to the local knowledge workflow.
+title: '[Feature]: '
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: What are you trying to do?
+      description: Describe a concrete moment where the current application gets in your way.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What would a useful result look like?
+      description: Focus on the smallest change that would solve the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: What have you tried already?
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Scope
+      options:
+        - label: I have described whether the suggestion requires internet access, a cloud service or a new dependency.

@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible problem with LocalLens.
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. Please use fictional examples. Do not upload private documents, SQLite databases, credentials, model weights or unredacted logs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start LocalLens with ...
+        2. Upload a fictional document containing ...
+        3. Ask ...
+        4. Observe ...
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: How do you run LocalLens?
+      options:
+        - Docker Compose
+        - Local .NET + Vite
+        - Other (describe below)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: LocalLens version or commit
+      placeholder: v0.1.0 or a short commit hash
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, browser, available RAM, Ollama version and exact chat/embedding model names. For Docker problems, include Docker/Compose versions.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Optional screenshots or redacted errors
+      description: Remove document text, filenames, host paths and identifiers that you do not want to make public.
