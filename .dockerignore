@@ -1,0 +1,14 @@
+.git
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/data
+**/repositories
+**/.artifacts
+**/__pycache__
+.tools
+.env
+.env.*
+*.db*
+*.log

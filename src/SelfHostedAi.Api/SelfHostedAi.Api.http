@@ -1,0 +1,11 @@
+@base = http://localhost:5080
+GET {{base}}/api/health
+
+### List indexed sources
+GET {{base}}/api/documents
+
+### Stream a grounded answer
+POST {{base}}/api/chat
+Content-Type: application/json
+
+{"question":"What do these documents say?","documentIds":[],"history":[]}

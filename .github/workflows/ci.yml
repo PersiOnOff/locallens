@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: dotnet build SelfHostedAi.slnx
+      - run: dotnet run --project tests/LocalLens.Tests
+      - run: python tests/smoke.py
+      - run: npm ci
+        working-directory: client
+      - run: npm test && npm run lint && npm run build
+        working-directory: client
+      - run: docker compose config --quiet
+      - run: docker build -t locallens:ci .

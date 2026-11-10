@@ -1,0 +1,56 @@
+name: locallens
+services:
+  app:
+    build: .
+    ports:
+      - '127.0.0.1:${PORT:-8080}:8080'
+    environment:
+      Lens__OllamaUrl: http://ollama:11434
+      Lens__ChatModel: ${CHAT_MODEL:-qwen2.5:3b}
+      Lens__EmbeddingModel: ${EMBEDDING_MODEL:-nomic-embed-text}
+    volumes:
+      - knowledge:/app/data
+      - type: bind
+        source: ${REPOSITORIES_PATH:-./samples}
+        target: /repositories
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+  ollama:
+    image: ollama/ollama:0.40.16
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: 'true'
+      OLLAMA_NUM_PARALLEL: '1'
+      OLLAMA_MAX_LOADED_MODELS: '1'
+    volumes:
+      - models:/root/.ollama
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+  models:
+    image: ollama/ollama:0.40.16
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      CHAT_MODEL: ${CHAT_MODEL:-qwen2.5:3b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
+    entrypoint: ['/bin/sh', '-ec']
+    command: ['ollama pull "$${CHAT_MODEL}" && ollama pull "$${EMBEDDING_MODEL}"']
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: on-failure:3
+volumes:
+  knowledge:
+  models:
