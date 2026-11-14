@@ -4,6 +4,7 @@ import { api, post, streamChat } from './api'
 import type { DocumentInfo, Evidence, Health, Message } from './api'
 import { Icon } from './components/Icon'
 import { Answer } from './components/Answer'
+import { focusableElements, nextFocusIndex } from './focusTrap'
 const FileGraph = lazy(() =>
   import('./components/FileGraph').then((m) => ({ default: m.FileGraph })),
 )
@@ -59,7 +60,10 @@ function App() {
   const fileInput = useRef<HTMLInputElement>(null),
     controller = useRef<AbortController | null>(null),
     bottom = useRef<HTMLDivElement>(null),
-    textarea = useRef<HTMLTextAreaElement>(null)
+    textarea = useRef<HTMLTextAreaElement>(null),
+    importButton = useRef<HTMLButtonElement>(null),
+    importDialog = useRef<HTMLElement>(null),
+    importWasOpen = useRef(false)
   const refresh = useCallback(async () => {
     const docs = await api<DocumentInfo[]>('/documents')
     setDocuments(docs)
@@ -93,6 +97,37 @@ function App() {
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages])
+  useEffect(() => {
+    const dialog = importDialog.current
+    if (!showImport || !dialog) return
+    const firstInput = dialog.querySelector<HTMLElement>('input, textarea, select')
+    ;(firstInput ?? focusableElements(dialog)[0])?.focus()
+    function onKeyDown(event: KeyboardEvent) {
+      if (!dialog) return
+      if (event.key === 'Escape') {
+        if (importing) return
+        event.preventDefault()
+        setShowImport(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusableElements(dialog)
+      const index = nextFocusIndex(
+        items.indexOf(document.activeElement as HTMLElement),
+        items.length,
+        event.shiftKey,
+      )
+      if (index < 0) return
+      event.preventDefault()
+      items[index]?.focus()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [showImport, importing])
+  useEffect(() => {
+    if (importWasOpen.current && !showImport) importButton.current?.focus()
+    importWasOpen.current = showImport
+  }, [showImport])
   const openDocument = useCallback(async (id: string) => {
     try {
       const doc = await api<DocumentInfo>(`/documents/${id}`)
@@ -387,7 +422,7 @@ function App() {
           {uploading ? 'Adding documents…' : 'Add documents'}
           <span>+</span>
         </button>
-        <button className="connect-button" onClick={() => setShowImport(true)}>
+        <button ref={importButton} className="connect-button" onClick={() => setShowImport(true)}>
           <Icon name="folder" size={16} />
           Connect a local repository
         </button>
@@ -793,7 +828,13 @@ function App() {
             if (e.target === e.currentTarget && !importing) setShowImport(false)
           }}
         >
-          <section className="modal" role="dialog" aria-modal="true" aria-labelledby="import-title">
+          <section
+            ref={importDialog}
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="import-title"
+          >
             <button
               className="icon-button modal-close"
               aria-label="Close repository import"
@@ -813,7 +854,6 @@ function App() {
               <label htmlFor="repository-path">Path within the repository root</label>
               <input
                 id="repository-path"
-                autoFocus
                 value={repoPath}
                 onChange={(e) => setRepoPath(e.target.value)}
                 placeholder=". or project-folder"

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --test ../tests/client-stream.test.ts"
+    "test": "node --test ../tests/client-stream.test.ts ../tests/import-dialog-focus.test.ts"
   },
   "dependencies": {
     "@types/cytoscape": "^3.21.9",
